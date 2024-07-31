@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const undoButton = document.getElementById('undoButton');
     const redScoreDisplay = document.getElementById('redScore');
     const yellowScoreDisplay = document.getElementById('yellowScore');
+    const columnIndicators = document.getElementById('columnIndicators');
 
     let currentPlayer = 'red';
     let gameActive = true;
@@ -14,7 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let redScore = 0;
     let yellowScore = 0;
 
-    // Initialize the game board
+    // Initialize the game board and column indicators
     const board = [];
     for (let r = 0; r < rows; r++) {
         const row = [];
@@ -27,6 +28,15 @@ document.addEventListener('DOMContentLoaded', () => {
             row.push(cell);
         }
         board.push(row);
+    }
+
+    for (let c = 0; c < columns; c++) {
+        const indicator = document.createElement('div');
+        indicator.classList.add('column-indicator');
+        indicator.dataset.column = c;
+        indicator.addEventListener('mouseover', handleIndicatorHover);
+        indicator.addEventListener('mouseout', handleIndicatorOut);
+        columnIndicators.appendChild(indicator);
     }
 
     function handleCellClick(event) {
@@ -47,6 +57,30 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         }
+    }
+
+    function handleIndicatorHover(event) {
+        if (!gameActive) return;
+
+        const column = event.target.dataset.column;
+        for (let r = 0; r < rows; r++) {
+            const cell = board[r][column];
+            if (!cell.classList.contains('red') && !cell.classList.contains('yellow')) {
+                cell.classList.add(`preview-${currentPlayer}`);
+            } else {
+                break;
+            }
+        }
+        event.target.classList.add('highlight');
+    }
+
+    function handleIndicatorOut(event) {
+        const column = event.target.dataset.column;
+        for (let r = 0; r < rows; r++) {
+            const cell = board[r][column];
+            cell.classList.remove('preview-red', 'preview-yellow');
+        }
+        event.target.classList.remove('highlight');
     }
 
     function makeMove(column) {
@@ -149,18 +183,34 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    resetButton.addEventListener('click', resetGame);
-    undoButton.addEventListener('click', undoMove);
+    resetButton.addEventListener('click', () => {
+        gameBoard.innerHTML = '';
+        columnIndicators.innerHTML = '';
+        moveHistory = [];
+        currentPlayer = 'red';
+        gameActive = true;
+        statusDisplay.textContent = 'Current Player: Red';
 
-    function resetGame() {
         for (let r = 0; r < rows; r++) {
             for (let c = 0; c < columns; c++) {
-                board[r][c].classList.remove('red', 'yellow', 'highlight');
+                const cell = document.createElement('div');
+                cell.classList.add('cell');
+                cell.dataset.column = c;
+                cell.addEventListener('click', handleCellClick);
+                gameBoard.appendChild(cell);
+                board[r][c] = cell;
             }
         }
-        currentPlayer = 'red';
-        statusDisplay.textContent = `Current Player: Red`;
-        gameActive = true;
-        moveHistory = [];
-    }
+
+        for (let c = 0; c < columns; c++) {
+            const indicator = document.createElement('div');
+            indicator.classList.add('column-indicator');
+            indicator.dataset.column = c;
+            indicator.addEventListener('mouseover', handleIndicatorHover);
+            indicator.addEventListener('mouseout', handleIndicatorOut);
+            columnIndicators.appendChild(indicator);
+        }
+    });
+
+    undoButton.addEventListener('click', undoMove);
 });

@@ -8,12 +8,30 @@ body {
     margin-bottom: 20px;
 }
 
+#columnIndicators {
+    display: grid;
+    grid-template-columns: repeat(7, 50px);
+    gap: 5px;
+    justify-content: center;
+    margin-bottom: 10px;
+}
+
+.column-indicator {
+    width: 50px;
+    height: 10px;
+    background-color: lightgray;
+}
+
+.column-indicator.highlight {
+    background-color: darkgray;
+}
+
 #gameBoard {
     display: grid;
     grid-template-columns: repeat(7, 50px);
     gap: 5px;
     justify-content: center;
-    margin-top: 20px;
+    margin-top: 10px;
 }
 
 .cell {
@@ -37,6 +55,14 @@ body {
 
 .cell.highlight {
     border: 2px solid #00ff00;
+}
+
+.cell.preview-red {
+    background-color: rgba(255, 0, 0, 0.5);
+}
+
+.cell.preview-yellow {
+    background-color: rgba(255, 255, 0, 0.5);
 }
 
 button {
