@@ -26,7 +26,58 @@
         <button id="startButton">Start Game</button>
     </div>
     <div id="columnIndicators"></div>
-    <div id="gameBoard"></div>
+    <div id<!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Connect 4</title>
+            <link rel="stylesheet" href="styles.css">
+        </head>
+        <body>
+            <h1>Connect 4</h1>
+            <div id="gameControls">
+                <label for="rows">Rows:</label>
+                <input type="number" id="rows" value="6" min="4" max="10">
+                <label for="columns">Columns:</label>
+                <input type="number" id="columns" value="7" min="4" max="10">
+                <label for="difficulty">AI Difficulty:</label>
+                <select id="difficulty">
+                    <option value="easy">Easy</option>
+                    <option value="medium">Medium</option>
+                    <option value="hard">Hard</option>
+                </select>
+                <button id="startButton">Start Game</button>
+            </div>
+            <div id="status">Current Player: Red</div>
+            <div id="columnIndicators"></div>
+            <div id="gameBoard"></div>
+            <div id="scoreBoard">
+                <div>Red Score: <span id="redScore">0</span></div>
+                <div>Yellow Score: <span id="yellowScore">0</span></div>
+                <div>Total Games: <span id="totalGames">0</span></div>
+                <div>Total Moves: <span id="totalMoves">0</span></div>
+                <div>Longest Game: <span id="longestGame">N/A</span></div>
+                <div>Shortest Game: <span id="shortestGame">N/A</span></div>
+                <div>Average Game Duration: <span id="avgGameDuration">N/A</span></div>
+            </div>
+            <div id="controls">
+                <button id="resetButton">Reset Game</button>
+                <button id="undoButton">Undo Last Move</button>
+            </div>
+            <div id="chat">
+                <input type="text" id="chatBox" placeholder="Type a message...">
+                <button id="sendMessage">Send</button>
+                <div id="chatDisplay"></div>
+            </div>
+            <div id="leaderboard">
+                <h2>Leaderboard</h2>
+                <ul id="leaderboardList"></ul>
+            </div>
+            <script src="script.js"></script>
+        </body>
+        </html>
+        ="gameBoard"></div>
     <h2 id="status">Current Player: Red</h2>
     <button id="resetButton">Reset Game</button>
     <button id="undoButton">Undo Last Move</button>

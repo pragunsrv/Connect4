@@ -18,6 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const totalMovesDisplay = document.getElementById('totalMoves');
     const longestGameDisplay = document.getElementById('longestGame');
     const shortestGameDisplay = document.getElementById('shortestGame');
+    const avgGameDurationDisplay = document.getElementById('avgGameDuration');
 
     let currentPlayer = 'red';
     let gameActive = true;
@@ -35,6 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let gameEndTime;
     let longestGame = 0;
     let shortestGame = Infinity;
+    let totalGameDuration = 0;
 
     startButton.addEventListener('click', startGame);
 
@@ -124,6 +126,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const gameDuration = (gameEndTime - gameStartTime) / 1000;
                 if (gameDuration > longestGame) longestGame = gameDuration;
                 if (gameDuration < shortestGame) shortestGame = gameDuration;
+                totalGameDuration += gameDuration;
                 updateStatistics();
                 gameActive = false;
             } else if (moveHistory.length === rows * columns) {
@@ -132,6 +135,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const gameDuration = (gameEndTime - gameStartTime) / 1000;
                 if (gameDuration > longestGame) longestGame = gameDuration;
                 if (gameDuration < shortestGame) shortestGame = gameDuration;
+                totalGameDuration += gameDuration;
                 updateStatistics();
                 gameActive = false;
             } else {
@@ -148,6 +152,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const cell = board[r][column];
             if (!cell.classList.contains('red') && !cell.classList.contains('yellow')) {
                 cell.classList.add(currentPlayer);
+                cell.classList.add('drop-animation');
+                setTimeout(() => {
+                    cell.classList.remove('drop-animation');
+                }, 500);
                 moveHistory.push({ row: r, column, player: currentPlayer });
                 return true;
             }
@@ -212,6 +220,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const gameDuration = (gameEndTime - gameStartTime) / 1000;
             if (gameDuration > longestGame) longestGame = gameDuration;
             if (gameDuration < shortestGame) shortestGame = gameDuration;
+            totalGameDuration += gameDuration;
             updateStatistics();
             gameActive = false;
         } else {
@@ -244,13 +253,13 @@ document.addEventListener('DOMContentLoaded', () => {
             yellowScore++;
             yellowScoreDisplay.textContent = yellowScore;
         }
+        leaderboard.push({ player: currentPlayer, score: moveHistory.length });
+        leaderboard.sort((a, b) => b.score - a.score);
         totalGames++;
+        updateLeaderboard();
     }
 
     function updateLeaderboard() {
-        leaderboard.push({ player: 'Red', score: redScore });
-        leaderboard.push({ player: 'Yellow', score: yellowScore });
-        leaderboard = leaderboard.sort((a, b) => b.score - a.score).slice(0, 5);
         leaderboardList.innerHTML = '';
         leaderboard.forEach((entry, index) => {
             const listItem = document.createElement('li');
@@ -264,6 +273,7 @@ document.addEventListener('DOMContentLoaded', () => {
         totalMovesDisplay.textContent = totalMoves;
         longestGameDisplay.textContent = `${longestGame} seconds`;
         shortestGameDisplay.textContent = `${shortestGame === Infinity ? 'N/A' : shortestGame + ' seconds'}`;
+        avgGameDurationDisplay.textContent = `${(totalGameDuration / totalGames).toFixed(2)} seconds`;
     }
 
     function undoMove() {
@@ -283,7 +293,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const message = chatBox.value;
         if (message.trim() !== '') {
             const chatMessage = document.createElement('div');
-            chatMessage.textContent = `${currentPlayer.charAt(0).toUpperCase() + currentPlayer.slice(1)}: ${message}`;
+            const timestamp = new Date().toLocaleTimeString();
+            chatMessage.textContent = `${timestamp} - ${currentPlayer.charAt(0).toUpperCase() + currentPlayer.slice(1)}: ${message}`;
             chatDisplay.appendChild(chatMessage);
             chatBox.value = '';
         }
