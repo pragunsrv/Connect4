@@ -4,9 +4,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const gameBoard = document.getElementById('gameBoard');
     const statusDisplay = document.getElementById('status');
     const resetButton = document.getElementById('resetButton');
+    const undoButton = document.getElementById('undoButton');
 
     let currentPlayer = 'red';
     let gameActive = true;
+    let moveHistory = [];
 
     // Initialize the game board
     const board = [];
@@ -31,6 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const cell = board[r][column];
             if (!cell.classList.contains('red') && !cell.classList.contains('yellow')) {
                 cell.classList.add(currentPlayer);
+                moveHistory.push({ row: r, column: column, player: currentPlayer });
                 if (checkWin(r, column)) {
                     statusDisplay.textContent = `Player ${currentPlayer} wins!`;
                     gameActive = false;
@@ -75,7 +78,18 @@ document.addEventListener('DOMContentLoaded', () => {
         return row >= 0 && row < rows && col >= 0 && col < columns;
     }
 
+    function undoMove() {
+        if (moveHistory.length === 0 || !gameActive) return;
+
+        const lastMove = moveHistory.pop();
+        const cell = board[lastMove.row][lastMove.column];
+        cell.classList.remove('red', 'yellow');
+        currentPlayer = lastMove.player;
+        statusDisplay.textContent = `Current Player: ${currentPlayer.charAt(0).toUpperCase() + currentPlayer.slice(1)}`;
+    }
+
     resetButton.addEventListener('click', resetGame);
+    undoButton.addEventListener('click', undoMove);
 
     function resetGame() {
         for (let r = 0; r < rows; r++) {
@@ -86,5 +100,6 @@ document.addEventListener('DOMContentLoaded', () => {
         currentPlayer = 'red';
         statusDisplay.textContent = `Current Player: Red`;
         gameActive = true;
+        moveHistory = [];
     }
 });
