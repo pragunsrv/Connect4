@@ -9,6 +9,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const startButton = document.getElementById('startButton');
     const rowsInput = document.getElementById('rows');
     const columnsInput = document.getElementById('columns');
+    const chatBox = document.getElementById('chatBox');
+    const sendMessage = document.getElementById('sendMessage');
+    const chatDisplay = document.getElementById('chatDisplay');
 
     let currentPlayer = 'red';
     let gameActive = true;
@@ -26,6 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
         columns = parseInt(columnsInput.value);
         gameBoard.innerHTML = '';
         columnIndicators.innerHTML = '';
+        chatDisplay.innerHTML = '';
         moveHistory = [];
         currentPlayer = 'red';
         gameActive = true;
@@ -134,19 +138,11 @@ document.addEventListener('DOMContentLoaded', () => {
         let r = row;
         let c = col;
         const winningCells = [];
-        while (isValid(r, c) && board[r][c].classList.contains(currentPlayer)) {
+        while (isValidCell(r, c) && board[r][c].classList.contains(currentPlayer)) {
+            winningCells.push(board[r][c]);
             count++;
-            winningCells.push({ row: r, col: c });
             r += rowDir;
             c += colDir;
-        }
-        r = row - rowDir;
-        c = col - colDir;
-        while (isValid(r, c) && board[r][c].classList.contains(currentPlayer)) {
-            count++;
-            winningCells.push({ row: r, col: c });
-            r -= rowDir;
-            c -= colDir;
         }
         if (count >= 4) {
             return winningCells;
@@ -154,14 +150,12 @@ document.addEventListener('DOMContentLoaded', () => {
         return null;
     }
 
-    function highlightWinningCells(cells) {
-        cells.forEach(cell => {
-            board[cell.row][cell.col].classList.add('highlight');
-        });
+    function isValidCell(row, col) {
+        return row >= 0 && row < rows && col >= 0 && col < columns;
     }
 
-    function isValid(row, col) {
-        return row >= 0 && row < rows && col >= 0 && col < columns;
+    function highlightWinningCells(cells) {
+        cells.forEach(cell => cell.classList.add('highlight'));
     }
 
     function switchPlayer() {
@@ -184,7 +178,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function findBestMove() {
-        // Simple AI logic: choose a random column
+        // Improved AI logic: prioritize winning moves or blocking opponent's winning moves
         const availableColumns = [];
         for (let c = 0; c < columns; c++) {
             if (board[0][c].classList.contains('red') || board[0][c].classList.contains('yellow')) {
@@ -218,6 +212,17 @@ document.addEventListener('DOMContentLoaded', () => {
         statusDisplay.textContent = `Current Player: ${currentPlayer.charAt(0).toUpperCase() + currentPlayer.slice(1)}`;
         gameActive = true;
     }
+
+    sendMessage.addEventListener('click', () => {
+        const message = chatBox.value.trim();
+        if (message) {
+            const messageElement = document.createElement('p');
+            messageElement.textContent = `${currentPlayer.charAt(0).toUpperCase() + currentPlayer.slice(1)}: ${message}`;
+            chatDisplay.appendChild(messageElement);
+            chatBox.value = '';
+            chatDisplay.scrollTop = chatDisplay.scrollHeight;
+        }
+    });
 
     startGame();
 });

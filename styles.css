@@ -82,3 +82,28 @@ button {
 #undoButton {
     margin-left: 10px;
 }
+
+#chat {
+    margin-top: 20px;
+    text-align: left;
+    display: inline-block;
+    width: 100%;
+}
+
+#chatBox {
+    width: 100%;
+    height: 80px;
+    margin-bottom: 10px;
+}
+
+#sendMessage {
+    width: 100%;
+}
+
+#chatDisplay {
+    border: 1px solid #cccccc;
+    padding: 10px;
+    height: 200px;
+    overflow-y: auto;
+    background-color: #ffffff;
+}
