@@ -29,29 +29,38 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!gameActive) return;
 
         const column = event.target.dataset.column;
+        if (makeMove(column)) {
+            if (checkWin()) {
+                statusDisplay.textContent = `Player ${currentPlayer} wins!`;
+                gameActive = false;
+            } else {
+                switchPlayer();
+                if (currentPlayer === 'yellow') {
+                    aiMove();
+                }
+            }
+        }
+    }
+
+    function makeMove(column) {
         for (let r = rows - 1; r >= 0; r--) {
             const cell = board[r][column];
             if (!cell.classList.contains('red') && !cell.classList.contains('yellow')) {
                 cell.classList.add(currentPlayer);
                 moveHistory.push({ row: r, column: column, player: currentPlayer });
-                if (checkWin(r, column)) {
-                    statusDisplay.textContent = `Player ${currentPlayer} wins!`;
-                    gameActive = false;
-                } else {
-                    currentPlayer = currentPlayer === 'red' ? 'yellow' : 'red';
-                    statusDisplay.textContent = `Current Player: ${currentPlayer.charAt(0).toUpperCase() + currentPlayer.slice(1)}`;
-                }
-                break;
+                return true;
             }
         }
+        return false;
     }
 
-    function checkWin(row, col) {
+    function checkWin() {
+        const lastMove = moveHistory[moveHistory.length - 1];
         return (
-            checkDirection(row, col, 0, 1) || // Horizontal
-            checkDirection(row, col, 1, 0) || // Vertical
-            checkDirection(row, col, 1, 1) || // Diagonal down-right
-            checkDirection(row, col, 1, -1)   // Diagonal down-left
+            checkDirection(lastMove.row, lastMove.column, 0, 1) || // Horizontal
+            checkDirection(lastMove.row, lastMove.column, 1, 0) || // Vertical
+            checkDirection(lastMove.row, lastMove.column, 1, 1) || // Diagonal down-right
+            checkDirection(lastMove.row, lastMove.column, 1, -1)   // Diagonal down-left
         );
     }
 
@@ -76,6 +85,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function isValid(row, col) {
         return row >= 0 && row < rows && col >= 0 && col < columns;
+    }
+
+    function switchPlayer() {
+        currentPlayer = currentPlayer === 'red' ? 'yellow' : 'red';
+        statusDisplay.textContent = `Current Player: ${currentPlayer.charAt(0).toUpperCase() + currentPlayer.slice(1)}`;
+    }
+
+    function aiMove() {
+        if (!gameActive) return;
+
+        let column;
+        do {
+            column = Math.floor(Math.random() * columns);
+        } while (!makeMove(column));
+        if (checkWin()) {
+            statusDisplay.textContent = `Player ${currentPlayer} wins!`;
+            gameActive = false;
+        } else {
+            switchPlayer();
+        }
     }
 
     function undoMove() {
