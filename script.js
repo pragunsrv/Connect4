@@ -5,10 +5,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const statusDisplay = document.getElementById('status');
     const resetButton = document.getElementById('resetButton');
     const undoButton = document.getElementById('undoButton');
+    const redScoreDisplay = document.getElementById('redScore');
+    const yellowScoreDisplay = document.getElementById('yellowScore');
 
     let currentPlayer = 'red';
     let gameActive = true;
     let moveHistory = [];
+    let redScore = 0;
+    let yellowScore = 0;
 
     // Initialize the game board
     const board = [];
@@ -30,7 +34,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const column = event.target.dataset.column;
         if (makeMove(column)) {
-            if (checkWin()) {
+            const winningCells = checkWin();
+            if (winningCells) {
+                highlightWinningCells(winningCells);
+                updateScore();
                 statusDisplay.textContent = `Player ${currentPlayer} wins!`;
                 gameActive = false;
             } else {
@@ -68,8 +75,10 @@ document.addEventListener('DOMContentLoaded', () => {
         let count = 0;
         let r = row;
         let c = col;
+        const winningCells = [];
         while (isValid(r, c) && board[r][c].classList.contains(currentPlayer)) {
             count++;
+            winningCells.push({ row: r, col: c });
             r += rowDir;
             c += colDir;
         }
@@ -77,10 +86,20 @@ document.addEventListener('DOMContentLoaded', () => {
         c = col - colDir;
         while (isValid(r, c) && board[r][c].classList.contains(currentPlayer)) {
             count++;
+            winningCells.push({ row: r, col: c });
             r -= rowDir;
             c -= colDir;
         }
-        return count >= 4;
+        if (count >= 4) {
+            return winningCells;
+        }
+        return null;
+    }
+
+    function highlightWinningCells(cells) {
+        cells.forEach(cell => {
+            board[cell.row][cell.col].classList.add('highlight');
+        });
     }
 
     function isValid(row, col) {
@@ -99,7 +118,10 @@ document.addEventListener('DOMContentLoaded', () => {
         do {
             column = Math.floor(Math.random() * columns);
         } while (!makeMove(column));
-        if (checkWin()) {
+        const winningCells = checkWin();
+        if (winningCells) {
+            highlightWinningCells(winningCells);
+            updateScore();
             statusDisplay.textContent = `Player ${currentPlayer} wins!`;
             gameActive = false;
         } else {
@@ -112,9 +134,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const lastMove = moveHistory.pop();
         const cell = board[lastMove.row][lastMove.column];
-        cell.classList.remove('red', 'yellow');
+        cell.classList.remove('red', 'yellow', 'highlight');
         currentPlayer = lastMove.player;
         statusDisplay.textContent = `Current Player: ${currentPlayer.charAt(0).toUpperCase() + currentPlayer.slice(1)}`;
+    }
+
+    function updateScore() {
+        if (currentPlayer === 'red') {
+            redScore++;
+            redScoreDisplay.textContent = redScore;
+        } else {
+            yellowScore++;
+            yellowScoreDisplay.textContent = yellowScore;
+        }
     }
 
     resetButton.addEventListener('click', resetGame);
@@ -123,7 +155,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function resetGame() {
         for (let r = 0; r < rows; r++) {
             for (let c = 0; c < columns; c++) {
-                board[r][c].classList.remove('red', 'yellow');
+                board[r][c].classList.remove('red', 'yellow', 'highlight');
             }
         }
         currentPlayer = 'red';
