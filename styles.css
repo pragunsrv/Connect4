@@ -8,6 +8,14 @@ body {
     margin-bottom: 20px;
 }
 
+#controls {
+    margin-bottom: 20px;
+}
+
+#controls input {
+    margin: 0 10px;
+}
+
 #columnIndicators {
     display: grid;
     grid-template-columns: repeat(7, 50px);
@@ -28,7 +36,6 @@ body {
 
 #gameBoard {
     display: grid;
-    grid-template-columns: repeat(7, 50px);
     gap: 5px;
     justify-content: center;
     margin-top: 10px;
