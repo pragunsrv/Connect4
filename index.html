@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connect 4 - Version 8</title>
+    <title>Connect 4 - Version 9</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -17,6 +17,12 @@
         <input type="number" id="rows" value="6" min="4" max="10">
         <label for="columns">Columns:</label>
         <input type="number" id="columns" value="7" min="4" max="10">
+        <label for="difficulty">AI Difficulty:</label>
+        <select id="difficulty">
+            <option value="easy">Easy</option>
+            <option value="medium">Medium</option>
+            <option value="hard">Hard</option>
+        </select>
         <button id="startButton">Start Game</button>
     </div>
     <div id="columnIndicators"></div>
@@ -28,6 +34,10 @@
         <textarea id="chatBox" placeholder="Type a message..."></textarea>
         <button id="sendMessage">Send</button>
         <div id="chatDisplay"></div>
+    </div>
+    <div id="leaderboard">
+        <h3>Leaderboard</h3>
+        <div id="leaderboardList"></div>
     </div>
     <script src="script.js"></script>
 </body>

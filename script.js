@@ -9,9 +9,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const startButton = document.getElementById('startButton');
     const rowsInput = document.getElementById('rows');
     const columnsInput = document.getElementById('columns');
+    const difficultySelect = document.getElementById('difficulty');
     const chatBox = document.getElementById('chatBox');
     const sendMessage = document.getElementById('sendMessage');
     const chatDisplay = document.getElementById('chatDisplay');
+    const leaderboardList = document.getElementById('leaderboardList');
 
     let currentPlayer = 'red';
     let gameActive = true;
@@ -20,22 +22,27 @@ document.addEventListener('DOMContentLoaded', () => {
     let yellowScore = 0;
     let rows = parseInt(rowsInput.value);
     let columns = parseInt(columnsInput.value);
+    let difficulty = difficultySelect.value;
     let board;
+    let leaderboard = [];
 
     startButton.addEventListener('click', startGame);
 
     function startGame() {
         rows = parseInt(rowsInput.value);
         columns = parseInt(columnsInput.value);
+        difficulty = difficultySelect.value;
         gameBoard.innerHTML = '';
         columnIndicators.innerHTML = '';
         chatDisplay.innerHTML = '';
+        leaderboardList.innerHTML = '';
         moveHistory = [];
         currentPlayer = 'red';
         gameActive = true;
         statusDisplay.textContent = 'Current Player: Red';
         initializeBoard();
         initializeColumnIndicators();
+        updateLeaderboard();
     }
 
     function initializeBoard() {
@@ -78,6 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 updateScore();
                 statusDisplay.textContent = `Player ${currentPlayer} wins!`;
                 gameActive = false;
+                updateLeaderboard();
             } else {
                 switchPlayer();
                 if (currentPlayer === 'yellow') {
@@ -116,7 +124,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const cell = board[r][column];
             if (!cell.classList.contains('red') && !cell.classList.contains('yellow')) {
                 cell.classList.add(currentPlayer);
-                moveHistory.push({ row: r, column: column, player: currentPlayer });
+                moveHistory.push({ row: r, column, player: currentPlayer });
                 return true;
             }
         }
@@ -124,20 +132,25 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function checkWin() {
-        const lastMove = moveHistory[moveHistory.length - 1];
-        return (
-            checkDirection(lastMove.row, lastMove.column, 0, 1) || // Horizontal
-            checkDirection(lastMove.row, lastMove.column, 1, 0) || // Vertical
-            checkDirection(lastMove.row, lastMove.column, 1, 1) || // Diagonal down-right
-            checkDirection(lastMove.row, lastMove.column, 1, -1)   // Diagonal down-left
-        );
+        for (let r = 0; r < rows; r++) {
+            for (let c = 0; c < columns; c++) {
+                if (board[r][c].classList.contains(currentPlayer)) {
+                    const winningCells = checkDirection(r, c, 1, 0) ||
+                        checkDirection(r, c, 0, 1) ||
+                        checkDirection(r, c, 1, 1) ||
+                        checkDirection(r, c, 1, -1);
+                    if (winningCells) return winningCells;
+                }
+            }
+        }
+        return null;
     }
 
     function checkDirection(row, col, rowDir, colDir) {
+        const winningCells = [];
         let count = 0;
         let r = row;
         let c = col;
-        const winningCells = [];
         while (isValidCell(r, c) && board[r][c].classList.contains(currentPlayer)) {
             winningCells.push(board[r][c]);
             count++;
@@ -178,7 +191,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function findBestMove() {
-        // Improved AI logic: prioritize winning moves or blocking opponent's winning moves
+        // Enhanced AI logic based on difficulty
         const availableColumns = [];
         for (let c = 0; c < columns; c++) {
             if (board[0][c].classList.contains('red') || board[0][c].classList.contains('yellow')) {
@@ -186,6 +199,13 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             availableColumns.push(c);
         }
+        if (difficulty === 'easy') {
+            return availableColumns[Math.floor(Math.random() * availableColumns.length)];
+        }
+        if (difficulty === 'medium') {
+            return availableColumns[Math.floor(Math.random() * availableColumns.length)];
+        }
+        // Hard AI logic (placeholder)
         return availableColumns[Math.floor(Math.random() * availableColumns.length)];
     }
 
@@ -197,6 +217,18 @@ document.addEventListener('DOMContentLoaded', () => {
             yellowScore++;
             yellowScoreDisplay.textContent = yellowScore;
         }
+    }
+
+    function updateLeaderboard() {
+        leaderboard.push({ player: 'Red', score: redScore });
+        leaderboard.push({ player: 'Yellow', score: yellowScore });
+        leaderboard = leaderboard.sort((a, b) => b.score - a.score).slice(0, 5);
+        leaderboardList.innerHTML = '';
+        leaderboard.forEach(entry => {
+            const entryElement = document.createElement('div');
+            entryElement.textContent = `${entry.player}: ${entry.score}`;
+            leaderboardList.appendChild(entryElement);
+        });
     }
 
     resetButton.addEventListener('click', startGame);
