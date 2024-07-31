@@ -120,3 +120,14 @@ button {
     padding: 10px;
     background-color: #ffffff;
 }
+
+#statistics {
+    margin-top: 20px;
+    text-align: left;
+    display: inline-block;
+    width: 100%;
+}
+
+#statistics p {
+    margin: 5px 0;
+}

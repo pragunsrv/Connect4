@@ -14,6 +14,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const sendMessage = document.getElementById('sendMessage');
     const chatDisplay = document.getElementById('chatDisplay');
     const leaderboardList = document.getElementById('leaderboardList');
+    const totalGamesDisplay = document.getElementById('totalGames');
+    const totalMovesDisplay = document.getElementById('totalMoves');
+    const longestGameDisplay = document.getElementById('longestGame');
+    const shortestGameDisplay = document.getElementById('shortestGame');
 
     let currentPlayer = 'red';
     let gameActive = true;
@@ -25,6 +29,12 @@ document.addEventListener('DOMContentLoaded', () => {
     let difficulty = difficultySelect.value;
     let board;
     let leaderboard = [];
+    let totalGames = 0;
+    let totalMoves = 0;
+    let gameStartTime;
+    let gameEndTime;
+    let longestGame = 0;
+    let shortestGame = Infinity;
 
     startButton.addEventListener('click', startGame);
 
@@ -43,6 +53,8 @@ document.addEventListener('DOMContentLoaded', () => {
         initializeBoard();
         initializeColumnIndicators();
         updateLeaderboard();
+        updateStatistics();
+        gameStartTime = new Date();
     }
 
     function initializeBoard() {
@@ -74,49 +86,61 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function handleIndicatorHover(event) {
+        const column = event.target.dataset.column;
+        highlightColumn(column, true);
+    }
+
+    function handleIndicatorOut(event) {
+        const column = event.target.dataset.column;
+        highlightColumn(column, false);
+    }
+
+    function highlightColumn(column, highlight) {
+        for (let r = 0; r < rows; r++) {
+            const cell = board[r][column];
+            if (highlight) {
+                if (!cell.classList.contains('red') && !cell.classList.contains('yellow')) {
+                    cell.classList.add(`preview-${currentPlayer}`);
+                }
+            } else {
+                cell.classList.remove('preview-red', 'preview-yellow');
+            }
+        }
+    }
+
     function handleCellClick(event) {
         if (!gameActive) return;
 
         const column = event.target.dataset.column;
         if (makeMove(column)) {
+            totalMoves++;
             const winningCells = checkWin();
             if (winningCells) {
                 highlightWinningCells(winningCells);
                 updateScore();
                 statusDisplay.textContent = `Player ${currentPlayer} wins!`;
+                gameEndTime = new Date();
+                const gameDuration = (gameEndTime - gameStartTime) / 1000;
+                if (gameDuration > longestGame) longestGame = gameDuration;
+                if (gameDuration < shortestGame) shortestGame = gameDuration;
+                updateStatistics();
                 gameActive = false;
-                updateLeaderboard();
+            } else if (moveHistory.length === rows * columns) {
+                statusDisplay.textContent = 'Game Draw!';
+                gameEndTime = new Date();
+                const gameDuration = (gameEndTime - gameStartTime) / 1000;
+                if (gameDuration > longestGame) longestGame = gameDuration;
+                if (gameDuration < shortestGame) shortestGame = gameDuration;
+                updateStatistics();
+                gameActive = false;
             } else {
                 switchPlayer();
                 if (currentPlayer === 'yellow') {
-                    aiMove();
+                    setTimeout(aiMove, 500);
                 }
             }
         }
-    }
-
-    function handleIndicatorHover(event) {
-        if (!gameActive) return;
-
-        const column = event.target.dataset.column;
-        for (let r = 0; r < rows; r++) {
-            const cell = board[r][column];
-            if (!cell.classList.contains('red') && !cell.classList.contains('yellow')) {
-                cell.classList.add(`preview-${currentPlayer}`);
-            } else {
-                break;
-            }
-        }
-        event.target.classList.add('highlight');
-    }
-
-    function handleIndicatorOut(event) {
-        const column = event.target.dataset.column;
-        for (let r = 0; r < rows; r++) {
-            const cell = board[r][column];
-            cell.classList.remove('preview-red', 'preview-yellow');
-        }
-        event.target.classList.remove('highlight');
     }
 
     function makeMove(column) {
@@ -184,6 +208,11 @@ document.addEventListener('DOMContentLoaded', () => {
             highlightWinningCells(winningCells);
             updateScore();
             statusDisplay.textContent = `Player ${currentPlayer} wins!`;
+            gameEndTime = new Date();
+            const gameDuration = (gameEndTime - gameStartTime) / 1000;
+            if (gameDuration > longestGame) longestGame = gameDuration;
+            if (gameDuration < shortestGame) shortestGame = gameDuration;
+            updateStatistics();
             gameActive = false;
         } else {
             switchPlayer();
@@ -191,7 +220,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function findBestMove() {
-        // Enhanced AI logic based on difficulty
         const availableColumns = [];
         for (let c = 0; c < columns; c++) {
             if (board[0][c].classList.contains('red') || board[0][c].classList.contains('yellow')) {
@@ -205,7 +233,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (difficulty === 'medium') {
             return availableColumns[Math.floor(Math.random() * availableColumns.length)];
         }
-        // Hard AI logic (placeholder)
         return availableColumns[Math.floor(Math.random() * availableColumns.length)];
     }
 
@@ -217,6 +244,7 @@ document.addEventListener('DOMContentLoaded', () => {
             yellowScore++;
             yellowScoreDisplay.textContent = yellowScore;
         }
+        totalGames++;
     }
 
     function updateLeaderboard() {
@@ -224,35 +252,40 @@ document.addEventListener('DOMContentLoaded', () => {
         leaderboard.push({ player: 'Yellow', score: yellowScore });
         leaderboard = leaderboard.sort((a, b) => b.score - a.score).slice(0, 5);
         leaderboardList.innerHTML = '';
-        leaderboard.forEach(entry => {
-            const entryElement = document.createElement('div');
-            entryElement.textContent = `${entry.player}: ${entry.score}`;
-            leaderboardList.appendChild(entryElement);
+        leaderboard.forEach((entry, index) => {
+            const listItem = document.createElement('li');
+            listItem.textContent = `${index + 1}. ${entry.player}: ${entry.score}`;
+            leaderboardList.appendChild(listItem);
         });
     }
 
-    resetButton.addEventListener('click', startGame);
-
-    undoButton.addEventListener('click', undoMove);
-
-    function undoMove() {
-        if (!gameActive || moveHistory.length === 0) return;
-
-        const lastMove = moveHistory.pop();
-        board[lastMove.row][lastMove.column].classList.remove(lastMove.player);
-        switchPlayer();
-        statusDisplay.textContent = `Current Player: ${currentPlayer.charAt(0).toUpperCase() + currentPlayer.slice(1)}`;
-        gameActive = true;
+    function updateStatistics() {
+        totalGamesDisplay.textContent = totalGames;
+        totalMovesDisplay.textContent = totalMoves;
+        longestGameDisplay.textContent = `${longestGame} seconds`;
+        shortestGameDisplay.textContent = `${shortestGame === Infinity ? 'N/A' : shortestGame + ' seconds'}`;
     }
 
+    function undoMove() {
+        if (moveHistory.length > 0) {
+            const lastMove = moveHistory.pop();
+            board[lastMove.row][lastMove.column].classList.remove(lastMove.player);
+            switchPlayer();
+            gameActive = true;
+            statusDisplay.textContent = `Current Player: ${currentPlayer.charAt(0).toUpperCase() + currentPlayer.slice(1)}`;
+        }
+    }
+
+    resetButton.addEventListener('click', startGame);
+    undoButton.addEventListener('click', undoMove);
+
     sendMessage.addEventListener('click', () => {
-        const message = chatBox.value.trim();
-        if (message) {
-            const messageElement = document.createElement('p');
-            messageElement.textContent = `${currentPlayer.charAt(0).toUpperCase() + currentPlayer.slice(1)}: ${message}`;
-            chatDisplay.appendChild(messageElement);
+        const message = chatBox.value;
+        if (message.trim() !== '') {
+            const chatMessage = document.createElement('div');
+            chatMessage.textContent = `${currentPlayer.charAt(0).toUpperCase() + currentPlayer.slice(1)}: ${message}`;
+            chatDisplay.appendChild(chatMessage);
             chatBox.value = '';
-            chatDisplay.scrollTop = chatDisplay.scrollHeight;
         }
     });
 
